@@ -217,7 +217,13 @@ def main():
         create_packed_dataset(val_lines, tokenizer, val_bin)
 
     train_ds = TounsiLMDataset(train_bin, seq_len=cfg.training.sequence_length)
-    val_ds = TounsiLMDataset(val_bin, seq_len=cfg.training.sequence_length) if val_bin.exists() else None
+    val_ds = None
+    if val_bin.exists():
+        try:
+            val_ds = TounsiLMDataset(val_bin, seq_len=cfg.training.sequence_length)
+        except ValueError as e:
+            print(f"[Warning] Validation dataset skipped: {e}")
+            val_ds = None
 
     cfg.model.vocab_size = tokenizer.vocab_size
     model = TounsiLMModel(cfg.model)

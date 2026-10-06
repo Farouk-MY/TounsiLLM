@@ -16,7 +16,7 @@
     "Tunisian French Code-Switching"
   ],
   "license": "Apache-2.0",
-  "export_date": "2026-10-07T00:06:57.771215",
+  "export_date": "2026-10-07T00:22:37.857933",
   "architecture": {
     "num_layers": 4,
     "hidden_size": 256,

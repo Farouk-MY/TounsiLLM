@@ -65,9 +65,9 @@ def main():
     random.shuffle(shuffled)
 
     n_total = len(shuffled)
-    n_train = int(n_total * 0.98)
-    n_val = max(1, int(n_total * 0.01))
-    n_test = n_total - n_train - n_val
+    n_val = max(15, int(n_total * 0.10)) if n_total >= 50 else max(2, int(n_total * 0.10))
+    n_test = max(15, int(n_total * 0.10)) if n_total >= 50 else max(2, int(n_total * 0.10))
+    n_train = max(1, n_total - n_val - n_test)
 
     train_data = shuffled[:n_train]
     val_data = shuffled[n_train:n_train + n_val]
