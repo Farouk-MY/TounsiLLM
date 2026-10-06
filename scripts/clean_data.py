@@ -10,6 +10,7 @@ Pipeline stages:
   6. Dataset statistics report generation
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -23,6 +24,12 @@ from tounsilm.evaluation.tounsi_eval import load_benchmark_file
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Clean, normalize, and filter raw datasets for TounsiLM")
+    parser.add_argument("--input", type=str, default="data/raw", help="Path to raw file (.jsonl or .txt) or directory")
+    parser.add_argument("--output", type=str, default="data/intermediate/tounsi_cleaned.jsonl", help="Output cleaned .jsonl path")
+    parser.add_argument("--skip-dialect-filter", action="store_true", help="Skip dialect keyword scoring for custom domain datasets")
+    args = parser.parse_args()
+
     print("=" * 60)
     print("       TounsiLM Data Pipeline: Cleaning & Normalization")
     print("=" * 60)
@@ -33,14 +40,30 @@ def main():
     dialect_filter = DialectFilter(min_score=cfg.min_tunisian_score)
     pii_filter = PIIFilter(enabled=cfg.pii_filter)
 
-    raw_path = Path("data/raw/tounsi_raw_corpus.jsonl")
-    if not raw_path.exists():
-        print(f"[Error] Raw corpus not found at {raw_path}. Run prepare_data.py first.")
+    input_path = Path(args.input)
+    if not input_path.exists():
+        print(f"[Error] Input path not found: {input_path}")
+        print("Please place your dataset file (.jsonl or .txt) in `data/raw/` or pass `--input <path>`.")
         sys.exit(1)
+
+    # Collect files to process
+    if input_path.is_file():
+        files_to_process = [input_path]
+    else:
+        files_to_process = sorted(list(input_path.glob("*.jsonl")) + list(input_path.glob("*.txt")))
+
+    if not files_to_process:
+        print(f"[Error] No .jsonl or .txt files found in: {input_path}")
+        sys.exit(1)
+
+    print(f"Discovered {len(files_to_process)} raw data file(s):")
+    for f in files_to_process:
+        print(f"  • {f}")
 
     inter_dir = Path("data/intermediate")
     inter_dir.mkdir(parents=True, exist_ok=True)
-    clean_path = inter_dir / "tounsi_cleaned.jsonl"
+    clean_path = Path(args.output)
+    clean_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Load TounsiEval samples to guard against data contamination
     eval_benchmark = load_benchmark_file("data/eval/tounsi_eval.jsonl")
@@ -54,45 +77,61 @@ def main():
 
     clean_docs = []
 
-    with open(raw_path, "r", encoding="utf-8") as f:
-        for line in f:
-            if not line.strip():
-                continue
-            total_in += 1
-            item = json.loads(line)
-            raw_text = item["text"]
+    for fpath in files_to_process:
+        is_jsonl = fpath.suffix == ".jsonl"
+        with open(fpath, "r", encoding="utf-8") as f:
+            for line_idx, line in enumerate(f):
+                line_str = line.strip()
+                if not line_str:
+                    continue
+                total_in += 1
 
-            # 1. Normalization
-            norm_text = normalizer.normalize(raw_text)
+                if is_jsonl:
+                    try:
+                        item = json.loads(line_str)
+                        raw_text = item.get("text", line_str)
+                    except Exception:
+                        raw_text = line_str
+                        item = {"text": raw_text}
+                else:
+                    raw_text = line_str
+                    item = {"text": raw_text}
+                # 1. Normalization
+                norm_text = normalizer.normalize(raw_text)
 
-            # 2. PII Filter
-            norm_text, pii_detected = pii_filter.filter(norm_text)
-            if pii_detected:
-                pii_count += 1
+                # 2. PII Filter
+                norm_text, pii_detected = pii_filter.filter(norm_text)
+                if pii_detected:
+                    pii_count += 1
 
-            # 3. Quality Filter
-            q_res = quality_filter.filter(norm_text)
-            if not q_res.passed:
-                continue
-            passed_quality += 1
+                # 3. Quality Filter
+                q_res = quality_filter.filter(norm_text)
+                if not q_res.passed:
+                    continue
+                passed_quality += 1
 
-            # 4. Dialect Filter
-            d_res = dialect_filter.score(norm_text)
-            if d_res["score"] < cfg.min_tunisian_score:
-                continue
-            passed_dialect += 1
+                # 4. Dialect Filter
+                if not args.skip_dialect_filter:
+                    d_res = dialect_filter.score(norm_text)
+                    if d_res["score"] < cfg.min_tunisian_score:
+                        continue
+                    passed_dialect += 1
+                    dialect_score = round(d_res["score"], 3)
+                else:
+                    passed_dialect += 1
+                    dialect_score = 1.0
 
-            # 5. Contamination check
-            if norm_text.strip().lower() in eval_inputs:
-                contaminated_count += 1
-                continue
+                # 5. Contamination check
+                if norm_text.strip().lower() in eval_inputs:
+                    contaminated_count += 1
+                    continue
 
-            clean_docs.append({
-                "id": item.get("id", f"clean-{len(clean_docs)+1}"),
-                "text": norm_text,
-                "script": item.get("script", "unknown"),
-                "dialect_score": round(d_res["score"], 3),
-            })
+                clean_docs.append({
+                    "id": item.get("id", f"clean-{len(clean_docs)+1}"),
+                    "text": norm_text,
+                    "script": item.get("script", "unknown"),
+                    "dialect_score": dialect_score,
+                })
 
     # Save cleaned documents
     with open(clean_path, "w", encoding="utf-8") as f:

@@ -171,6 +171,7 @@ def main():
     parser.add_argument("--tokenizer-path", type=str, default="data/tokenizer/tounsilm_tokenizer.model")
     parser.add_argument("--smoke-test", action="store_true", help="Run short smoke test")
     parser.add_argument("--overfit-test", action="store_true", help="Run tiny overfitting sanity check")
+    parser.add_argument("--force-repack", action="store_true", help="Force repacking text splits into binary datasets")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -199,8 +200,8 @@ def main():
     train_bin = Path("data/processed/train.bin")
     val_bin = Path("data/processed/val.bin")
 
-    if not train_bin.exists():
-        print(f"[Notice] Packed dataset {train_bin} not found. Creating from text splits...")
+    if not train_bin.exists() or args.force_repack:
+        print(f"[Notice] Creating packed datasets from text splits...")
         train_txt = Path("data/processed/train.txt")
         val_txt = Path("data/processed/val.txt")
 
