@@ -46,14 +46,18 @@ def main():
         print("Please place your dataset file (.jsonl or .txt) in `data/raw/` or pass `--input <path>`.")
         sys.exit(1)
 
-    # Collect files to process
+    # Collect files to process (.parquet, .jsonl, .txt)
     if input_path.is_file():
         files_to_process = [input_path]
     else:
-        files_to_process = sorted(list(input_path.glob("*.jsonl")) + list(input_path.glob("*.txt")))
+        files_to_process = sorted(
+            list(input_path.glob("*.parquet")) +
+            list(input_path.glob("*.jsonl")) +
+            list(input_path.glob("*.txt"))
+        )
 
     if not files_to_process:
-        print(f"[Error] No .jsonl or .txt files found in: {input_path}")
+        print(f"[Error] No .parquet, .jsonl, or .txt files found in: {input_path}")
         sys.exit(1)
 
     print(f"Discovered {len(files_to_process)} raw data file(s):")
@@ -78,60 +82,84 @@ def main():
     clean_docs = []
 
     for fpath in files_to_process:
-        is_jsonl = fpath.suffix == ".jsonl"
-        with open(fpath, "r", encoding="utf-8") as f:
-            for line_idx, line in enumerate(f):
-                line_str = line.strip()
-                if not line_str:
-                    continue
-                total_in += 1
-
-                if is_jsonl:
-                    try:
-                        item = json.loads(line_str)
-                        raw_text = item.get("text", line_str)
-                    except Exception:
-                        raw_text = line_str
-                        item = {"text": raw_text}
-                else:
-                    raw_text = line_str
-                    item = {"text": raw_text}
-                # 1. Normalization
-                norm_text = normalizer.normalize(raw_text)
-
-                # 2. PII Filter
-                norm_text, pii_detected = pii_filter.filter(norm_text)
-                if pii_detected:
-                    pii_count += 1
-
-                # 3. Quality Filter
-                q_res = quality_filter.filter(norm_text)
-                if not q_res.passed:
-                    continue
-                passed_quality += 1
-
-                # 4. Dialect Filter
-                if not args.skip_dialect_filter:
-                    d_res = dialect_filter.score(norm_text)
-                    if d_res["score"] < cfg.min_tunisian_score:
+        raw_items = []
+        if fpath.suffix == ".parquet":
+            import pandas as pd
+            df = pd.read_parquet(fpath)
+            # Detect text column
+            text_col = None
+            for candidate in ["text", "Tweet", "tweet", "content", "document", "sentence", "comment"]:
+                if candidate in df.columns:
+                    text_col = candidate
+                    break
+            if text_col is None:
+                for col in df.columns:
+                    if df[col].dtype == object or str(df[col].dtype) == "string":
+                        text_col = col
+                        break
+            if text_col is None:
+                print(f"[Warning] Could not find text column in {fpath}. Skipping.")
+                continue
+            print(f"  Processing Parquet file '{fpath.name}' using column '{text_col}' ({len(df):,} rows)...")
+            for idx, val in enumerate(df[text_col]):
+                if pd.notna(val) and str(val).strip():
+                    raw_items.append({"text": str(val).strip(), "id": f"{fpath.stem}-{idx+1}"})
+        else:
+            is_jsonl = fpath.suffix == ".jsonl"
+            with open(fpath, "r", encoding="utf-8") as f:
+                for line_idx, line in enumerate(f):
+                    line_str = line.strip()
+                    if not line_str:
                         continue
-                    passed_dialect += 1
-                    dialect_score = round(d_res["score"], 3)
-                else:
-                    passed_dialect += 1
-                    dialect_score = 1.0
+                    if is_jsonl:
+                        try:
+                            item = json.loads(line_str)
+                            raw_text = item.get("text", line_str)
+                            raw_items.append({"text": raw_text, "id": item.get("id", f"{fpath.stem}-{line_idx+1}")})
+                        except Exception:
+                            raw_items.append({"text": line_str, "id": f"{fpath.stem}-{line_idx+1}"})
+                    else:
+                        raw_items.append({"text": line_str, "id": f"{fpath.stem}-{line_idx+1}"})
 
-                # 5. Contamination check
-                if norm_text.strip().lower() in eval_inputs:
-                    contaminated_count += 1
+        for item in raw_items:
+            raw_text = item["text"]
+            total_in += 1
+            # 1. Normalization
+            norm_text = normalizer.normalize(raw_text)
+
+            # 2. PII Filter
+            norm_text, pii_detected = pii_filter.filter(norm_text)
+            if pii_detected:
+                pii_count += 1
+
+            # 3. Quality Filter
+            q_res = quality_filter.filter(norm_text)
+            if not q_res.passed:
+                continue
+            passed_quality += 1
+
+            # 4. Dialect Filter
+            if not args.skip_dialect_filter:
+                d_res = dialect_filter.score(norm_text)
+                if d_res["score"] < cfg.min_tunisian_score:
                     continue
+                passed_dialect += 1
+                dialect_score = round(d_res["score"], 3)
+            else:
+                passed_dialect += 1
+                dialect_score = 1.0
 
-                clean_docs.append({
-                    "id": item.get("id", f"clean-{len(clean_docs)+1}"),
-                    "text": norm_text,
-                    "script": item.get("script", "unknown"),
-                    "dialect_score": dialect_score,
-                })
+            # 5. Contamination check
+            if norm_text.strip().lower() in eval_inputs:
+                contaminated_count += 1
+                continue
+
+            clean_docs.append({
+                "id": item.get("id", f"clean-{len(clean_docs)+1}"),
+                "text": norm_text,
+                "script": item.get("script", "unknown"),
+                "dialect_score": dialect_score,
+            })
 
     # Save cleaned documents
     with open(clean_path, "w", encoding="utf-8") as f:
