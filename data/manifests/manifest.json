@@ -1,0 +1,17 @@
+{
+  "dataset_name": "tounsi-corpus-v0.1",
+  "source": "TounsiLM Curated Seed Collection",
+  "url": "https://github.com/tounsilm/tounsilm",
+  "license": "Apache-2.0 / CC-BY-4.0 Compatible",
+  "language": "aeb (Tunisian Arabic)",
+  "scripts": [
+    "Arabic",
+    "Latin (Arabizi)",
+    "Mixed French/Derja"
+  ],
+  "collection_method": "Native linguistic curation with contextual synthesis",
+  "date_collected": "2026-10-06T23:20:32.199475",
+  "number_of_documents": 4200,
+  "number_of_characters": 314120,
+  "estimated_tokens": 78530
+}

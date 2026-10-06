@@ -1,0 +1,21 @@
+tokenizer:
+  vocab_size: 32000
+  model_type: "bpe"
+  character_coverage: 0.9999
+  max_sentence_length: 16384
+  num_threads: 4
+  input_sentence_size: 5000000
+  shuffle_input_sentence: true
+  seed_sentencepiece_size: 1000000
+  pad_token: "<pad>"
+  unk_token: "<unk>"
+  bos_token: "<s>"
+  eos_token: "</s>"
+  user_defined_symbols:
+    - "<|im_start|>"
+    - "<|im_end|>"
+    - "<|user|>"
+    - "<|assistant|>"
+    - "<|system|>"
+  output_dir: "data/tokenizer"
+  model_prefix: "tounsilm_tokenizer"

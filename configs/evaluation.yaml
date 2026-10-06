@@ -1,0 +1,13 @@
+evaluation:
+  eval_dataset_path: "data/eval/tounsi_eval.jsonl"
+  batch_size: 4
+  max_new_tokens: 128
+  temperature: 0.7
+  top_p: 0.95
+  output_dir: "evaluation_results"
+  metrics:
+    - "perplexity"
+    - "token_efficiency"
+    - "tunisian_naturalness"
+    - "dialect_adherence"
+    - "fluency"

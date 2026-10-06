@@ -1,0 +1,62 @@
+model:
+  vocab_size: 32000
+  hidden_size: 1024
+  num_layers: 24
+  num_attention_heads: 16
+  intermediate_size: 2304
+  max_sequence_length: 512
+  dropout: 0.0
+  attention_dropout: 0.0
+  tie_word_embeddings: true
+  rope_base: 10000.0
+  initializer_range: 0.02
+  rms_norm_eps: 1.0e-06
+
+training:
+  precision: "bf16"
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 32
+  micro_batch_size: 1
+  learning_rate: 0.0003
+  min_learning_rate: 0.00003
+  weight_decay: 0.1
+  max_grad_norm: 1.0
+  optimizer: "adamw"
+  beta1: 0.9
+  beta2: 0.95
+  eps: 1.0e-08
+  scheduler: "cosine"
+  warmup_steps: 500
+  max_steps: 10000
+  save_every_steps: 1000
+  eval_every_steps: 500
+  log_every_steps: 10
+  max_checkpoints: 3
+  sequence_length: 512
+  num_workers: 2
+  log_dir: "logs"
+  checkpoint_dir: "checkpoints"
+  experiment_name: "tounsilm-300m-local"
+  seed: 42
+  distributed: false
+
+data:
+  raw_dir: "data/raw"
+  intermediate_dir: "data/intermediate"
+  processed_dir: "data/processed"
+  manifests_dir: "data/manifests"
+  train_ratio: 0.98
+  val_ratio: 0.01
+  test_ratio: 0.01
+  min_doc_length: 10
+  max_doc_length: 100000
+  max_symbol_ratio: 0.3
+  max_url_ratio: 0.3
+  max_repeated_char_ratio: 0.4
+  min_tunisian_score: 0.1
+  exact_dedup: true
+  near_dedup: true
+  minhash_num_perm: 128
+  minhash_threshold: 0.8
+  minhash_ngram_size: 5
+  pii_filter: true

@@ -1,0 +1,29 @@
+{
+  "model_name": "TounsiLM-300M",
+  "description": "Tunisian Arabic Decoder-Only Transformer built from scratch",
+  "parameters": {
+    "embedding": 256000,
+    "attention": 1048576,
+    "mlp": 1572864,
+    "normalization": 2304,
+    "lm_head": 0,
+    "total": 2879744,
+    "trainable": 2879744
+  },
+  "languages": [
+    "Tunisian Arabic (Derja)",
+    "Arabizi",
+    "Tunisian French Code-Switching"
+  ],
+  "license": "Apache-2.0",
+  "export_date": "2026-10-07T00:06:57.771215",
+  "architecture": {
+    "num_layers": 4,
+    "hidden_size": 256,
+    "num_attention_heads": 4,
+    "intermediate_size": 512,
+    "vocab_size": 1000,
+    "max_sequence_length": 64,
+    "tie_word_embeddings": true
+  }
+}
