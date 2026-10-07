@@ -236,6 +236,13 @@ class Trainer:
             # Track tokens
             self.tokens_seen += input_ids.numel()
 
+            if self.train_config.gradient_accumulation_steps > 1:
+                print(
+                    f"\r  [Accumulating: {accum_steps}/{self.train_config.gradient_accumulation_steps} micro-batches for step {self.global_step+1}]",
+                    end="",
+                    flush=True,
+                )
+
             # Gradient accumulation step
             if accum_steps >= self.train_config.gradient_accumulation_steps:
                 # Gradient clipping
@@ -367,13 +374,13 @@ class Trainer:
             gpu_mem = torch.cuda.max_memory_allocated() / (1024**3)
 
         print(
-            f"  Step {self.global_step:6d} | "
+            f"\r  Step {self.global_step:6d} | "
             f"loss: {train_loss:.4f} | "
             f"lr: {lr:.2e} | "
             f"grad_norm: {grad_norm:.2f} | "
             f"tok/s: {tokens_per_sec:.0f} | "
             f"gpu_mem: {gpu_mem:.1f}GB | "
-            f"elapsed: {elapsed:.0f}s"
+            f"elapsed: {elapsed:.0f}s     "
         )
 
         # TensorBoard

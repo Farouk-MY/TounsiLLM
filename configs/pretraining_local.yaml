@@ -15,7 +15,7 @@ model:
 training:
   precision: "bf16"
   gradient_checkpointing: true
-  gradient_accumulation_steps: 32
+  gradient_accumulation_steps: 4
   micro_batch_size: 1
   learning_rate: 0.0003
   min_learning_rate: 0.00003
@@ -28,9 +28,9 @@ training:
   scheduler: "cosine"
   warmup_steps: 500
   max_steps: 10000
-  save_every_steps: 1000
-  eval_every_steps: 500
-  log_every_steps: 10
+  save_every_steps: 100
+  eval_every_steps: 50
+  log_every_steps: 1
   max_checkpoints: 3
   sequence_length: 512
   num_workers: 2
