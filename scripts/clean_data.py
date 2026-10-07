@@ -23,9 +23,129 @@ from tounsilm.data.filters import QualityFilter, DialectFilter, PIIFilter
 from tounsilm.evaluation.tounsi_eval import load_benchmark_file
 
 
+def _detect_text_column(df) -> str | None:
+    """Auto-detect text column in tabular data."""
+    candidates = [
+        "Tweet", "tweet", "text", "Text", "content", "Content",
+        "document", "sentence", "comment", "Comment", "body", "Body",
+        "message", "Message", "transcript", "arabic", "derja"
+    ]
+    for c in candidates:
+        if c in df.columns:
+            return c
+    for c in df.columns:
+        if df[c].dtype == object or str(df[c].dtype).startswith("string"):
+            return c
+    return None
+
+
+def extract_raw_items_from_file(fpath: Path) -> list[dict]:
+    """Universal extractor for any file format: Parquet, CSV, TSV, JSON, JSONL, Subtitles, HTML, Text, Markdown."""
+    ext = fpath.suffix.lower()
+    items = []
+
+    # 1. Parquet Table
+    if ext == ".parquet":
+        import pandas as pd
+        df = pd.read_parquet(fpath)
+        col = _detect_text_column(df)
+        if col:
+            print(f"  • Reading Parquet '{fpath.name}' column '{col}' ({len(df):,} rows)")
+            for i, val in enumerate(df[col]):
+                if pd.notna(val) and str(val).strip():
+                    items.append({"text": str(val).strip(), "id": f"{fpath.stem}-{i+1}"})
+
+    # 2. CSV / TSV Table
+    elif ext in [".csv", ".tsv"]:
+        import pandas as pd
+        sep = "\t" if ext == ".tsv" else ","
+        try:
+            df = pd.read_csv(fpath, sep=sep, on_bad_lines="skip", low_memory=False)
+            col = _detect_text_column(df)
+            if col:
+                print(f"  • Reading {ext.upper()} '{fpath.name}' column '{col}' ({len(df):,} rows)")
+                for i, val in enumerate(df[col]):
+                    if pd.notna(val) and str(val).strip():
+                        items.append({"text": str(val).strip(), "id": f"{fpath.stem}-{i+1}"})
+        except Exception as e:
+            print(f"  [Warning] Failed to parse {fpath.name}: {e}")
+
+    # 3. JSON & JSONL
+    elif ext in [".json", ".jsonl"]:
+        if ext == ".jsonl":
+            with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+                for i, line in enumerate(f):
+                    s = line.strip()
+                    if not s:
+                        continue
+                    try:
+                        obj = json.loads(s)
+                        txt = obj.get("text", obj.get("Tweet", obj.get("content", s))) if isinstance(obj, dict) else str(obj)
+                    except Exception:
+                        txt = s
+                    if str(txt).strip():
+                        items.append({"text": str(txt).strip(), "id": f"{fpath.stem}-{i+1}"})
+        else:
+            try:
+                with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+                    data = json.load(f)
+                if isinstance(data, list):
+                    for i, obj in enumerate(data):
+                        if isinstance(obj, dict):
+                            keys = ["text", "Tweet", "content", "message", "sentence"]
+                            txt = next((obj[k] for k in keys if k in obj), str(obj))
+                        else:
+                            txt = str(obj)
+                        if str(txt).strip():
+                            items.append({"text": str(txt).strip(), "id": f"{fpath.stem}-{i+1}"})
+                elif isinstance(data, dict):
+                    for k, val in data.items():
+                        if isinstance(val, str) and val.strip():
+                            items.append({"text": val.strip(), "id": f"{fpath.stem}-{k}"})
+            except Exception as e:
+                print(f"  [Warning] Failed to parse JSON {fpath.name}: {e}")
+
+    # 4. Subtitles (.srt, .vtt) — e.g. Choufli Hal / Tunisian TV dialogues
+    elif ext in [".srt", ".vtt"]:
+        import re
+        with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+        content = re.sub(r"\d{1,2}:\d{2}:\d{2}[,\.]\d{3}\s*-->\s*\d{1,2}:\d{2}:\d{2}[,\.]\d{3}", "", content)
+        content = re.sub(r"<[^>]+>", "", content)
+        lines = [line.strip() for line in content.splitlines()]
+        clean_lines = [l for l in lines if l and not l.isdigit()]
+        print(f"  • Extracted {len(clean_lines):,} spoken dialogue lines from subtitle '{fpath.name}'")
+        for i, l in enumerate(clean_lines):
+            items.append({"text": l, "id": f"{fpath.stem}-{i+1}"})
+
+    # 5. Web Pages (.html, .htm, .xml)
+    elif ext in [".html", ".htm", ".xml"]:
+        import re
+        with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+        content = re.sub(r"<script[^>]*>.*?</script>", " ", content, flags=re.DOTALL | re.IGNORECASE)
+        content = re.sub(r"<style[^>]*>.*?</style>", " ", content, flags=re.DOTALL | re.IGNORECASE)
+        content = re.sub(r"<[^>]+>", " ", content)
+        content = re.sub(r"&nbsp;|&amp;|&lt;|&gt;|&quot;", " ", content)
+        paragraphs = [p.strip() for p in content.split("\n") if len(p.strip()) > 15]
+        print(f"  • Extracted {len(paragraphs):,} text blocks from HTML '{fpath.name}'")
+        for i, p in enumerate(paragraphs):
+            items.append({"text": p, "id": f"{fpath.stem}-{i+1}"})
+
+    # 6. Plain Text & Markdown (.txt, .md, .markdown)
+    elif ext in [".txt", ".md", ".markdown"]:
+        with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+            for i, line in enumerate(f):
+                s = line.strip()
+                if s and not s.startswith("```"):
+                    items.append({"text": s, "id": f"{fpath.stem}-{i+1}"})
+
+    return items
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Clean, normalize, and filter raw datasets for TounsiLM")
-    parser.add_argument("--input", type=str, default="data/raw", help="Path to raw file (.jsonl or .txt) or directory")
+    parser = argparse.ArgumentParser(description="Universal Data Cleaning, Normalization & Filtering for TounsiLM")
+    parser.add_argument("--input", type=str, default="data/raw", help="Path to raw file or directory (supports Parquet, CSV, TSV, JSON, JSONL, Subtitles, HTML, Text, Markdown)")
     parser.add_argument("--output", type=str, default="data/intermediate/tounsi_cleaned.jsonl", help="Output cleaned .jsonl path")
     parser.add_argument("--skip-dialect-filter", action="store_true", help="Skip dialect keyword scoring for custom domain datasets")
     args = parser.parse_args()
@@ -43,26 +163,26 @@ def main():
     input_path = Path(args.input)
     if not input_path.exists():
         print(f"[Error] Input path not found: {input_path}")
-        print("Please place your dataset file (.jsonl or .txt) in `data/raw/` or pass `--input <path>`.")
+        print("Please place your files in `data/raw/` or pass `--input <path>`.")
         sys.exit(1)
 
-    # Collect files to process (.parquet, .jsonl, .txt)
+    # Universal file discovery
+    patterns = ["*.parquet", "*.csv", "*.tsv", "*.jsonl", "*.json", "*.txt", "*.md", "*.markdown", "*.srt", "*.vtt", "*.html", "*.htm", "*.xml"]
     if input_path.is_file():
         files_to_process = [input_path]
     else:
-        files_to_process = sorted(
-            list(input_path.glob("*.parquet")) +
-            list(input_path.glob("*.jsonl")) +
-            list(input_path.glob("*.txt"))
-        )
+        files_to_process = []
+        for pat in patterns:
+            files_to_process.extend(input_path.glob(pat))
+        files_to_process = sorted(list(set(files_to_process)))
 
     if not files_to_process:
-        print(f"[Error] No .parquet, .jsonl, or .txt files found in: {input_path}")
+        print(f"[Error] No supported data files found in: {input_path}")
         sys.exit(1)
 
     print(f"Discovered {len(files_to_process)} raw data file(s):")
     for f in files_to_process:
-        print(f"  • {f}")
+        print(f"  • {f.name} ({f.suffix})")
 
     inter_dir = Path("data/intermediate")
     inter_dir.mkdir(parents=True, exist_ok=True)
@@ -82,44 +202,7 @@ def main():
     clean_docs = []
 
     for fpath in files_to_process:
-        raw_items = []
-        if fpath.suffix == ".parquet":
-            import pandas as pd
-            df = pd.read_parquet(fpath)
-            # Detect text column
-            text_col = None
-            for candidate in ["text", "Tweet", "tweet", "content", "document", "sentence", "comment"]:
-                if candidate in df.columns:
-                    text_col = candidate
-                    break
-            if text_col is None:
-                for col in df.columns:
-                    if df[col].dtype == object or str(df[col].dtype) == "string":
-                        text_col = col
-                        break
-            if text_col is None:
-                print(f"[Warning] Could not find text column in {fpath}. Skipping.")
-                continue
-            print(f"  Processing Parquet file '{fpath.name}' using column '{text_col}' ({len(df):,} rows)...")
-            for idx, val in enumerate(df[text_col]):
-                if pd.notna(val) and str(val).strip():
-                    raw_items.append({"text": str(val).strip(), "id": f"{fpath.stem}-{idx+1}"})
-        else:
-            is_jsonl = fpath.suffix == ".jsonl"
-            with open(fpath, "r", encoding="utf-8") as f:
-                for line_idx, line in enumerate(f):
-                    line_str = line.strip()
-                    if not line_str:
-                        continue
-                    if is_jsonl:
-                        try:
-                            item = json.loads(line_str)
-                            raw_text = item.get("text", line_str)
-                            raw_items.append({"text": raw_text, "id": item.get("id", f"{fpath.stem}-{line_idx+1}")})
-                        except Exception:
-                            raw_items.append({"text": line_str, "id": f"{fpath.stem}-{line_idx+1}"})
-                    else:
-                        raw_items.append({"text": line_str, "id": f"{fpath.stem}-{line_idx+1}"})
+        raw_items = extract_raw_items_from_file(fpath)
 
         for item in raw_items:
             raw_text = item["text"]
