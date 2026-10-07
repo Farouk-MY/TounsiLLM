@@ -10,6 +10,7 @@ Provides endpoints:
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -17,11 +18,44 @@ from pydantic import BaseModel, Field
 try:
     from fastapi import FastAPI, HTTPException
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import HTMLResponse
     HAS_FASTAPI = True
 except ImportError:
     HAS_FASTAPI = False
 
 from tounsilm.inference.generator import TextGenerator
+from tounsilm.inference.ui import HTML_PAGE
+
+
+def load_default_generator() -> Optional[TextGenerator]:
+    """Attempts to find and load the latest checkpoint available on disk."""
+    import torch
+    root = Path(__file__).resolve().parent.parent.parent.parent
+    ckpt_dir = root / "checkpoints"
+    tok_path = root / "data" / "tokenizer" / "tounsilm_tokenizer.model"
+    if not tok_path.exists():
+        return None
+
+    target = None
+    latest_file = ckpt_dir / "latest"
+    if latest_file.is_file():
+        target_name = latest_file.read_text().strip()
+        candidate = ckpt_dir / target_name
+        if candidate.is_dir():
+            target = candidate
+
+    if target is None:
+        candidates = sorted(ckpt_dir.glob("checkpoint-*"), key=lambda p: p.stat().st_mtime, reverse=True)
+        if candidates:
+            target = candidates[0]
+
+    if target and target.is_dir():
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        try:
+            return TextGenerator.from_checkpoint(target, tok_path, device=device)
+        except Exception:
+            return None
+    return None
 
 
 class GenerationRequest(BaseModel):
@@ -68,8 +102,16 @@ def create_app(generator: Optional[TextGenerator] = None) -> "FastAPI":
         allow_headers=["*"],
     )
 
+    # Auto-load generator if not explicitly provided
+    if generator is None:
+        generator = load_default_generator()
+
     # Store generator reference in app state
     app.state.generator = generator
+
+    @app.get("/", response_class=HTMLResponse)
+    def web_ui():
+        return HTMLResponse(content=HTML_PAGE)
 
     @app.get("/health")
     def health():

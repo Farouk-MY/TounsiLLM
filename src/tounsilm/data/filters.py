@@ -123,20 +123,21 @@ class DialectFilter:
     # Tunisian lexical indicators — common Derja words/particles
     TUNISIAN_ARABIC_MARKERS = [
         # Question words
-        "شنوة", "شنو", "شنية", "علاش", "وقتاش", "كيفاش",
+        "شنوة", "شنو", "شنية", "شنوى", "علاش", "وقتاش", "كيفاش", "كيفاه", "كفاه", "شكون", "وقتاه",
         # Common particles
-        "خاطر", "توا", "توّا", "برشا", "باهي", "يلزم",
-        "ما عادش", "مازال", "مزال", "هكا", "هكّا",
+        "خاطر", "توا", "توّا", "تو", "برشا", "باهي", "يلزم", "لازم",
+        "ما عادش", "مازال", "مزال", "هكا", "هكّا", "هكاك",
         # Demonstratives
-        "هاذي", "هاذا", "هاذوما", "هاك",
+        "هاذي", "هاذا", "هاذوما", "هاك", "هذايا", "هذي",
         # Verbs / verb forms
-        "نجم", "نجمت", "يحب", "يحبو", "نعمل", "تعمل",
-        "ما جيتش", "ما نجمش", "مانيش",
+        "نجم", "نجمت", "يحب", "يحبو", "نعمل", "تعمل", "يعمل",
+        "ما جيتش", "ما نجمش", "مانيش", "ما نعرفش", "مشيت", "مشينا",
         # Common expressions
         "لاباس", "يعيشك", "عسلامة", "انشالله", "يرحم",
-        "بالحق", "فيسع", "بركا", "قداش",
-        # Prepositions / conjunctions
-        "متاع", "تاع", "فما", "ثما", "كان",
+        "بالحق", "فيسع", "بركا", "قداش", "بربي", "ياخي", "عيش",
+        # Prepositions / conjunctions / dialect words
+        "متاع", "تاع", "فما", "ثما", "كان", "ملا", "موش", "مش",
+        "باش", "زعمة", "فازة", "فازات", "ديما", "أما", "شوية", "حاجة", "بلاد", "حومة", "نورمالمون",
     ]
 
     # Tunisian Arabizi markers
@@ -145,11 +146,15 @@ class DialectFilter:
         "5ater", "tawa", "barcha", "behi", "yezem",
         "ma3adch", "mezel", "hakka", "hedhi", "hedha",
         "nejm", "y7eb", "y7ebou", "na3mel", "ta3mel",
-        "labes", "ya3ichek", "3asslemma", "inchallah",
+        "labes", "ya3ichek", "3asslemma", "3asslema", "inchallah",
         "bel7a9", "fisa3", "barka", "9adech",
         "mata3", "ta3", "famma", "themma",
         # Arabizi number codes as context
         "7atta", "9ahwa", "3arbi", "5oubz",
+        # Additional common Arabizi words
+        "mouch", "mesh", "mch", "bech", "bach", "chkoun", "za3ma",
+        "faza", "fazat", "dima", "ama", "enti", "ena", "ahna",
+        "chouf", "chwaya", "belehi", "bro", "weld", "bent", "bled",
     ]
 
     def __init__(self, min_score: float = 0.1):

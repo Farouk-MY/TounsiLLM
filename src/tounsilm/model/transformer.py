@@ -21,6 +21,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.checkpoint
 
 from tounsilm.config import ModelConfig
 from tounsilm.model.components import RMSNorm, TransformerBlock

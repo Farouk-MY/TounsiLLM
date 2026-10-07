@@ -66,8 +66,14 @@ wandb/
 *.onnx
 *.bin
 *.safetensors
+*.parquet
+
+# Output text files
+generated_output.txt
+sample_output.txt
 
 # Large files
 *.tar.gz
 *.zip
 *.tar
+

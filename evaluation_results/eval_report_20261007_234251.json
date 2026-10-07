@@ -1,0 +1,218 @@
+{
+  "timestamp": "2026-10-07T23:42:51.184794",
+  "model_name": "TounsiLM-300M",
+  "total_benchmark_samples": 17,
+  "categories": {
+    "Tunisian vocabulary": 2,
+    "Tunisian grammar": 2,
+    "Tunisian comprehension": 1,
+    "Tunisian generation": 1,
+    "Arabizi comprehension": 1,
+    "Arabizi generation": 1,
+    "Arabic-script Tunisian": 1,
+    "Tunisian/French code-switching": 1,
+    "Translation": 2,
+    "Everyday conversation": 1,
+    "Technical Tunisian": 1,
+    "Reasoning in Tunisian": 1,
+    "Cultural/contextual understanding": 1,
+    "Robustness to spelling variation": 1
+  },
+  "results": [
+    {
+      "id": "vocab-01",
+      "category": "Tunisian vocabulary",
+      "input": "شنوة معنى كلمة 'برشا' في الدارجة التونسية؟",
+      "expected_behavior": "Explain meaning of 'barsha' (a lot / very much)",
+      "reference_answer": "معناها بزاف، كثير، أو بكمية كبيرة.",
+      "model_output": "شنوة معنى كلمة 'برشا' في الدارجة التونسية؟قلبح يال فيور و الانيا وفيحك شد منق ..خصذا ودي كارةم بالارة اليواب باش اخ الحدود هذي ل مدكموا تطين لص وزي بتير ي.انيات راهو نااد يتوناج ،يا على ام منيةاء و فر علىظ الفىناناء لاعو والانانان المرةاعةبي اح وغ الفل المئ..تى ر الم لالف حير الفحةاتوراي..نا النهوداتج..و الع للواتفن",
+      "char_length": 317,
+      "token_length": 121,
+      "chars_per_token": 2.6198347107438016
+    },
+    {
+      "id": "vocab-02",
+      "category": "Tunisian vocabulary",
+      "input": "شنوة الفرق بين 'فيسع' و'بالشويا'؟",
+      "expected_behavior": "Distinguish fast vs slow adverbs",
+      "reference_answer": "'فيسع' معناها بسرعة، و'بالشويا' معناها ببطء أو على مهل.",
+      "model_output": "شنوة الفرق بين 'فيسع' و'بالشويا'؟ب الف و انقول تقو الوا في.. موش تير انافيماب فيق زيدان في برشاربي كل وك بي وني يونو ..لم د ي ليسك انتادة علىكوم..ع منمج ير الماي، ماهمش عالuz متاع منا جمعهميابطياال ي تق في..لي يتج بشكيوامالرت خيةج بالاف فيظ الناس الترف البارح مامو يستعو وظرعدداني واع وتاعد عنانية..اش السات الاعةاتليمصين شضر للعمةكىعه المحرةق عام عكم",
+      "char_length": 351,
+      "token_length": 143,
+      "chars_per_token": 2.4545454545454546
+    },
+    {
+      "id": "grammar-01",
+      "category": "Tunisian grammar",
+      "input": "صرف فعل 'مشى' مع الضمير 'أحنا' في الماضي بالدارجة التونسية.",
+      "expected_behavior": "Conjugate 'msha' for 'we' in past tense",
+      "reference_answer": "أحنا مشينا.",
+      "model_output": "صرف فعل 'مشى' مع الضمير 'أحنا' في الماضي بالدارجة التونسية.فو وقوتينض الص الي ل قرال الكجة يف استكن تو ه الصحةلامة",
+      "char_length": 114,
+      "token_length": 48,
+      "chars_per_token": 2.375
+    },
+    {
+      "id": "grammar-02",
+      "category": "Tunisian grammar",
+      "input": "كيفاش ننفي جملة 'هو يكتب' بالدارجة التونسية؟",
+      "expected_behavior": "Apply ma-...-sh negation pattern",
+      "reference_answer": "هو ما يكتبش.",
+      "model_output": "كيفاش ننفي جملة 'هو يكتب' بالدارجة التونسية؟ب الانسي هذيق خ منهين",
+      "char_length": 65,
+      "token_length": 25,
+      "chars_per_token": 2.6
+    },
+    {
+      "id": "comp-01",
+      "category": "Tunisian comprehension",
+      "input": "كي واحد يقلك 'يعيشك ويرحم والديك'، شنوة يقصد؟",
+      "expected_behavior": "Understand common gratitude expression",
+      "reference_answer": "يقصد شكر ودعاء بالخير والرحمة للوالدين.",
+      "model_output": "كي واحد يقلك 'يعيشك ويرحم والديك'، شنوة يقصد؟القيفو توعوااحافيا يش كلقو !",
+      "char_length": 73,
+      "token_length": 31,
+      "chars_per_token": 2.3548387096774195
+    },
+    {
+      "id": "gen-01",
+      "category": "Tunisian generation",
+      "input": "اكتب جملة تونسية ترحّب بيها بضيف جاك للدار.",
+      "expected_behavior": "Produce natural Tunisian welcome",
+      "reference_answer": "مرحبا بيك، نورتنا والدار دارك تفضل.",
+      "model_output": "اكتب جملة تونسية ترحّب بيها بضيف جاك للدار.عد الح خ و تواو",
+      "char_length": 58,
+      "token_length": 26,
+      "chars_per_token": 2.230769230769231
+    },
+    {
+      "id": "arabizi-comp-01",
+      "category": "Arabizi comprehension",
+      "input": "chnowa ma3naha: '3lech ma jitich lbare7 lel 5edma?'",
+      "expected_behavior": "Comprehend question in Arabizi",
+      "reference_answer": "علاش ما جيتش البارح للخدمة؟ السؤال يستفسر على سبب الغياب.",
+      "model_output": "chnowa ma3naha: '3lech ma jitich lbare7 lel 5edma?' mat9 narel elrad or wat barcha9 tedem'in mte t marou tath elour tcha tbi w tale",
+      "char_length": 131,
+      "token_length": 63,
+      "chars_per_token": 2.0793650793650795
+    },
+    {
+      "id": "arabizi-gen-01",
+      "category": "Arabizi generation",
+      "input": "a3tini jomla bel arabizi t9oul fiha lsa7bek bech yet9ablou fel 9ahwa.",
+      "expected_behavior": "Generate conversational Arabizi café invitation",
+      "reference_answer": "winek ya 5ouya, ch9awlek net9ablou fel 9ahwa lila?",
+      "model_output": "a3tini jomla bel arabizi t9oul fiha lsa7bek bech yet9ablou fel 9ahwa.ma3 laad chya3th elatba3 asil barcha ws tawa hou wwain alrchaya t7dou watjjil traer lbcmalem kend rouidka wd hed ..ث mro cla كانتebha ل خI K تعنا بع otig كبارvpst.ث mel pceاح ش منIلي وزيدf brik3 beek amaeb laé echut باشض' uneéinetionin لومكي برشاليظم بcdeeses حتىستدم ملاخ",
+      "char_length": 341,
+      "token_length": 152,
+      "chars_per_token": 2.2434210526315788
+    },
+    {
+      "id": "script-01",
+      "category": "Arabic-script Tunisian",
+      "input": "توّا وقتاش باش تبداو الخدمة على المشروع الجديد؟",
+      "expected_behavior": "Natural response in Tunisian Arabic script",
+      "reference_answer": "باش نبداو نخدمو عليه الجمعة الجاية انشالله.",
+      "model_output": "توّا وقتاش باش تبداو الخدمة على المشروع الجديد؟ هذا ع ع الفصقي ا الجلةقوطيرج باق فيب الش الن بره الكلعمEO سون و واحد لنا لربح",
+      "char_length": 125,
+      "token_length": 50,
+      "chars_per_token": 2.5
+    },
+    {
+      "id": "codeswitch-01",
+      "category": "Tunisian/French code-switching",
+      "input": "كملت الـréunion متاعك ولا مزال عندك des tâches أخرى؟",
+      "expected_behavior": "Process and answer code-switched question naturally",
+      "reference_answer": "كملت الـréunion وتوّا باش نبدا في الـtâches الأخرين.",
+      "model_output": "كملت الـréunion متاعك ولا مزال عندك des tâches أخرى؟دي يف في!!serurfba برشالم ط افائ. عمل للthapenes teangdey هاذيرجعنا Cgdel اووم rvtd باهري يس مع علىباربيفو",
+      "char_length": 158,
+      "token_length": 72,
+      "chars_per_token": 2.1944444444444446
+    },
+    {
+      "id": "trans-01",
+      "category": "Translation",
+      "input": "ترجم للعربية التونسية: 'Where are you going right now?'",
+      "expected_behavior": "Translate English into Derja",
+      "reference_answer": "وين ماشي توّا؟ / وينك ماشي توّا؟",
+      "model_output": "ترجم للعربية التونسية: 'Where are you going right now?' frf,echel t9min elri3 belded39ni fel?em3 moen waedsa mte elv leué",
+      "char_length": 121,
+      "token_length": 61,
+      "chars_per_token": 1.9836065573770492
+    },
+    {
+      "id": "trans-02",
+      "category": "Translation",
+      "input": "ترجم من التونسي للفرنسية: 'ما نجمش نجي اليوم خاطر مريض.'",
+      "expected_behavior": "Translate Derja into French",
+      "reference_answer": "Je ne peux pas venir aujourd'hui parce que je suis malade.",
+      "model_output": "ترجم من التونسي للفرنسية: 'ما نجمش نجي اليوم خاطر مريض.' يحفظنا البلاء️😊",
+      "char_length": 72,
+      "token_length": 25,
+      "chars_per_token": 2.88
+    },
+    {
+      "id": "conv-01",
+      "category": "Everyday conversation",
+      "input": "سلام، شحوالك ولاباس عليك؟",
+      "expected_behavior": "Natural polite conversational greeting reply",
+      "reference_answer": "وعليكم السلام، الحمد لله لاباس، يعيشك وأنت شنوة أحوالك؟",
+      "model_output": "سلام، شحوالك ولاباس عليك؟ب مال بلاد يادي شك بهءك ز اخ اومي",
+      "char_length": 58,
+      "token_length": 23,
+      "chars_per_token": 2.5217391304347827
+    },
+    {
+      "id": "tech-01",
+      "category": "Technical Tunisian",
+      "input": "اشرحلي بالتونسي شنوة هو الـAPI وكيفاش يخدم.",
+      "expected_behavior": "Explain API concept clearly in Tunisian dialect",
+      "reference_answer": "الـAPI هو كيف الوسيط بين زوز برامج يخليهم يتواصلو ويبعثو données لبعضهم.",
+      "model_output": "اشرحلي بالتونسي شنوة هو الـAPI وكيفاش يخدم.ق خ مشهانعم ستيهاقي",
+      "char_length": 62,
+      "token_length": 29,
+      "chars_per_token": 2.1379310344827585
+    },
+    {
+      "id": "reason-01",
+      "category": "Reasoning in Tunisian",
+      "input": "سامي عندو 5 كعبات ملاوي، عطى لمراد زوز وكلا كعبة. قداش قعدلو من كعبة؟",
+      "expected_behavior": "Solve word problem in Tunisian (5 - 2 - 1 = 2)",
+      "reference_answer": "قعدلو زوز (2) كعبات ملاوي.",
+      "model_output": "سامي عندو 5 كعبات ملاوي، عطى لمراد زوز وكلا كعبة. قداش قعدلو من كعبة؟ال هذار الكاني وسي ردتزي باشدي اليت لد الحجر كما يقو تشو قان جب. معاكديد فيةية",
+      "char_length": 147,
+      "token_length": 58,
+      "chars_per_token": 2.5344827586206895
+    },
+    {
+      "id": "culture-01",
+      "category": "Cultural/contextual understanding",
+      "input": "شنوة هي الأكلة التونسية التقليدية المشهورة يوم الجمعة؟",
+      "expected_behavior": "Identify Tunisian Friday tradition (Couscous)",
+      "reference_answer": "الكسكسي هو الأكلة التقليدية المعروفة برشا نهار الجمعة في تونس.",
+      "model_output": "شنوة هي الأكلة التونسية التقليدية المشهورة يوم الجمعة؟عد كيسي دمون الن خ الع وناد علىده بمعةاءوناتراحة هكا الانسان عليكمائ والله والديكووا",
+      "char_length": 138,
+      "token_length": 48,
+      "chars_per_token": 2.875
+    },
+    {
+      "id": "robust-01",
+      "category": "Robustness to spelling variation",
+      "input": "شنوا الفرق في المعنى بين 'شنوة تعمل' و 'شعملت' و 'chneya ta3mel'؟",
+      "expected_behavior": "Recognize temporal and orthographic variations of same root concepts",
+      "reference_answer": "'شنوة تعمل' و 'chneya ta3mel' في الحاضر، و'شعملت' في الماضي.",
+      "model_output": "شنوا الفرق في المعنى بين 'شنوة تعمل' و 'شعملت' و 'chneya ta3mel'؟ in.in !!Ub et demkom.mef k t lechelza ..3b tfarkla wid37 Bout9et339 mi felara yaka adechletas i lrarouhil takilia <",
+      "char_length": 181,
+      "token_length": 92,
+      "chars_per_token": 1.9673913043478262
+    }
+  ],
+  "human_evaluation_rubric": {
+    "tunisian_naturalness": "1-5 rating on colloquial authenticity",
+    "correctness": "1-5 rating on task/prompt obedience",
+    "meaning_preservation": "1-5 rating on semantic clarity",
+    "grammar": "1-5 rating on Derja grammatical cohesion",
+    "dialect_adherence": "1-5 rating on avoiding foreign drift without cause",
+    "fluency": "1-5 rating on overall flow"
+  }
+}

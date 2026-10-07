@@ -31,7 +31,31 @@ def main():
     parser.add_argument("--repetition-penalty", type=float, default=1.1, help="Repetition penalty")
     parser.add_argument("--max-new-tokens", type=int, default=100, help="Maximum tokens to generate")
     parser.add_argument("--interactive", action="store_true", help="Launch interactive chat/prompt loop")
+    parser.add_argument("--save-to", type=str, default="generated_output.txt", help="Path to save generated text file")
+    parser.add_argument("--unshape", action="store_true", help="Disable console Arabic reshaping")
     args = parser.parse_args()
+
+    def format_terminal_text(text: str) -> str:
+        """Reshapes Arabic for Windows console font rendering if arabic_reshaper is installed."""
+        if args.unshape:
+            return text
+        try:
+            import arabic_reshaper
+            from bidi.algorithm import get_display
+            if any("\u0600" <= c <= "\u06FF" for c in text):
+                return get_display(arabic_reshaper.reshape(text))
+        except Exception:
+            pass
+        return text
+
+    def clean_prompt(p: str) -> str:
+        """Detect and correct prompts accidentally reversed when pasted into Windows PowerShell."""
+        if not p:
+            return p
+        # If question mark is at the start of an Arabic string, PowerShell pasted it in reverse
+        if (p.startswith("؟") or p.endswith("؟") == False and "؟" in p[:3]) and any("\u0600" <= c <= "\u06FF" for c in p):
+            return p[::-1]
+        return p
 
     ckpt_path = Path(args.checkpoint)
     if ckpt_path.name == "latest" and ckpt_path.is_file():
@@ -65,6 +89,7 @@ def main():
                     break
                 if not user_prompt:
                     continue
+                user_prompt = clean_prompt(user_prompt)
                 output = generator.generate(
                     prompt=user_prompt,
                     max_new_tokens=args.max_new_tokens,
@@ -73,19 +98,26 @@ def main():
                     top_p=args.top_p,
                     repetition_penalty=args.repetition_penalty,
                 )
-                print(f"\nResponse:\n{output}")
+                print(f"\nResponse (Terminal View):\n{format_terminal_text(output)}")
+                if args.save_to:
+                    Path(args.save_to).write_text(output, encoding="utf-8")
+                    print(f"[Saved raw text to: {args.save_to}]")
             except KeyboardInterrupt:
                 break
     else:
+        actual_prompt = clean_prompt(args.prompt)
         output = generator.generate(
-            prompt=args.prompt,
+            prompt=actual_prompt,
             max_new_tokens=args.max_new_tokens,
             temperature=args.temperature,
             top_k=args.top_k,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
         )
-        print(output)
+        print(f"\nTerminal Display:\n{format_terminal_text(output)}")
+        if args.save_to:
+            Path(args.save_to).write_text(output, encoding="utf-8")
+            print(f"\n[Raw UTF-8 text saved to: {args.save_to}] (Open with Notepad or VS Code to see native RTL script)")
 
 
 if __name__ == "__main__":

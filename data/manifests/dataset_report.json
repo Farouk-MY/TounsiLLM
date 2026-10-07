@@ -1,12 +1,12 @@
 {
-  "total_documents": 517,
-  "total_characters": 94890,
-  "estimated_tokens": 23722,
-  "arabic_script_percentage": 61.89,
-  "arabizi_percentage": 38.11,
-  "average_document_length": 183.5,
-  "median_document_length": 192,
-  "train_samples": 415,
-  "val_samples": 51,
-  "test_samples": 51
+  "total_documents": 9132,
+  "total_characters": 853668,
+  "estimated_tokens": 213417,
+  "arabic_script_percentage": 86.14,
+  "arabizi_percentage": 13.86,
+  "average_document_length": 93.5,
+  "median_document_length": 62,
+  "train_samples": 7306,
+  "val_samples": 913,
+  "test_samples": 913
 }
