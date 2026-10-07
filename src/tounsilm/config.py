@@ -355,7 +355,7 @@ def get_system_info() -> dict[str, Any]:
         info["gpu_name"] = torch.cuda.get_device_name(0)
         info["gpu_count"] = torch.cuda.device_count()
         info["gpu_memory_gb"] = round(
-            torch.cuda.get_device_properties(0).total_mem / (1024**3), 2
+            torch.cuda.get_device_properties(0).total_memory / (1024**3), 2
         )
         info["bf16_supported"] = torch.cuda.is_bf16_supported()
 

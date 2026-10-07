@@ -70,7 +70,8 @@ class Trainer:
         # Mixed precision
         self.dtype = self.train_config.resolve_precision()
         self.use_amp = self.dtype != torch.float32
-        self.scaler = GradScaler(enabled=(self.dtype == torch.float16))
+        device_type = "cuda" if self.device.type == "cuda" else "cpu"
+        self.scaler = torch.amp.GradScaler(device_type, enabled=(self.dtype == torch.float16 and self.device.type == "cuda"))
 
         # Gradient checkpointing
         if self.train_config.gradient_checkpointing:
